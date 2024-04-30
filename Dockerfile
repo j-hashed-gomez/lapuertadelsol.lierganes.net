@@ -7,8 +7,9 @@ COPY ./web/static/ /var/www/html/
 # Copia el archivo de configuración predeterminado de Apache que sirve el index.html
 COPY apache-default.conf /etc/apache2/sites-available/000-default.conf
 
-# Exponer el puerto 80 para que Apache pueda recibir solicitudes
-EXPOSE 5000
+# Copia el nuevo script de inicio
+COPY start-apache.sh /usr/local/bin/
+chmod +x /usr/local/bin/start-apache.sh
 
-# El contenedor de Apache se ejecuta en primer plano para mantenerlo en ejecución
-CMD ["apache2-foreground"]
+# Establece el nuevo script de inicio como el punto de entrada del contenedor
+ENTRYPOINT ["start-apache.sh"]
