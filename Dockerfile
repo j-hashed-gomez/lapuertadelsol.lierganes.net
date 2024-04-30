@@ -6,7 +6,13 @@ RUN mkdir -p /var/www/html/uploads
 RUN chmod 755 /var/www/html/uploads
 RUN chown www-data:www-data /var/www/html/uploads
 
+# Crea el archivo .htpasswd y añade las líneas con los usuarios y contraseñas
+RUN echo 'jose:$2y$05$Z/PtGDfz9yJPvblW7xMcNOT8utvLmPl2Rw1F5Ej6mqfc7GUrejz8O' > /var/www/html/.htpasswd \
+    && echo 'esteban:$2y$05$iIw5IJr9..SpvXjVM97z0ebVmfkAq84osCuumE4YikkvufsgjVamu' >> /var/www/html/.htpasswd \
+    && echo 'agus:$2y$05$a5t8RLODmnIhxgWoD.73xOiBzrwhIITIhL/CxcuK0CXxP9XFEyHj.' >> /var/www/html/.htpasswd
 
+# Asegúrate de que el archivo .htpasswd tiene los permisos adecuados
+RUN chmod 644 /var/www/html/.htpasswd
 
 # Actualiza los paquetes e instala cualquier actualización de seguridad necesaria
 RUN apt-get update && apt-get upgrade -y

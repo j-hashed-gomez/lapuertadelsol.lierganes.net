@@ -1,0 +1,6 @@
+<Files "prueba.html">
+    AuthType Basic
+    AuthName "Área Restringida"
+    AuthUserFile /var/www/html/.htpasswd
+    Require valid-user
+</Files>
