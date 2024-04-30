@@ -21,7 +21,7 @@ RUN a2enmod rewrite
 
 
 # Expone el puerto 8080 para que sea accesible externamente
-EXPOSE 8080
+EXPOSE 80
 
 # Ejecuta Apache en modo foreground
 CMD ["apache2-foreground"]
