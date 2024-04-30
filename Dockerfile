@@ -20,6 +20,9 @@ RUN apt-get update && apt-get upgrade -y
 # Instala extensiones adicionales de PHP si es necesario
 # RUN docker-php-ext-install mysqli pdo pdo_mysql
 
+# Configura AllowOverride para el directorio de Apache
+RUN sed -i 's/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
+
 # Habilita el mod_rewrite para Apache
 RUN a2enmod rewrite
 
