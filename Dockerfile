@@ -18,7 +18,7 @@ RUN python3 -m venv venv
 ENV PATH="/app/venv/bin:$PATH"
 
 # Copiar los archivos de la aplicación Flask al contenedor
-COPY /web/static/* /app
+COPY /web/static/* /app/
 
 # Instalar las dependencias de Flask usando pip
 RUN pip install --upgrade pip && pip install flask
