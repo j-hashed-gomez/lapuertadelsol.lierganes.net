@@ -4,6 +4,7 @@ FROM php:8.1-apache
 COPY ./web/static/ /var/www/html/
 RUN mkdir -p /var/www/html/uploads
 RUN chmod +x /var/www/html/fechas_ini.sh
+RUN chmod +x /var/www/html/check_update_hashes.sh
 RUN chown www-data:www-data /var/www/html/uploads
 RUN touch /var/www/html/uploads/carta.txt
 RUN touch /var/www/html/uploads/raciones.txt
@@ -25,6 +26,8 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y cron
 RUN echo "@reboot root /var/www/html/fechas_ini.sh >> /var/www/html/fechas.log 2>&1" > /etc/cron.d/fechas_job
 RUN chmod 0644 /etc/cron.d/fechas_job
 RUN crontab /etc/cron.d/fechas_job
+RUN (crontab -l ; echo "* * * * * /var/www/html/check_update_hashes.sh >> /var/www/html/check_update_hashes.log 2>&1") | crontab - 
+
 
 # Configura AllowOverride para el directorio de Apache
 RUN sed -i 's/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
