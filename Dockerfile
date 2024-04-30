@@ -16,7 +16,7 @@ ENV PATH="/app/venv/bin:$PATH"
 
 # Copiar los archivos de la aplicación al directorio de trabajo
 COPY /web/static/* /app/web/
-COPY server.py /
+COPY server.py /app/
 
 # Instalar Flask dentro del entorno virtual
 RUN pip install flask
