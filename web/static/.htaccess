@@ -1,4 +1,4 @@
-<Files "upload.html">
+<Files "upload.php">
     AuthType Basic
     AuthName "Área Restringida"
     AuthUserFile /var/www/html/.htpasswd
