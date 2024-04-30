@@ -4,7 +4,7 @@
 DIR="/var/www/html/uploads"
 
 # Archivo donde están almacenados los hashes anteriores
-HASH_FILE="/var/www/html/fechas_ini"
+HASH_FILE="/var/www/html/uploads/fechas_ini"
 
 # Archivos específicos para procesar
 FILES=("carta.txt" "raciones.txt" "bocadillos.txt")
