@@ -11,5 +11,7 @@ COPY apache-default.conf /etc/apache2/sites-available/000-default.conf
 COPY start-apache.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/start-apache.sh
 
+EXPOSE 5000
+
 # Establece el nuevo script de inicio como el punto de entrada del contenedor
 ENTRYPOINT ["start-apache.sh"]
