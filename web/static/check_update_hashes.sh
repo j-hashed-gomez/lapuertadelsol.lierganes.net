@@ -33,18 +33,20 @@ insert_content() {
     local temp_file=$(mktemp)
     local counter=1
     # Lee el archivo línea por línea
-    while IFS= read -r item; do
+    while IFS= read -r line; do
+        # Divide la línea en elementos y precio
+        IFS='::' read -r element price <<< "$line"
         # Formato de la fila a insertar
         echo "    <tr>" >> "$temp_file"
         echo "      <th scope=\"row\">$counter</th>" >> "$temp_file"
-        echo "      <td colspan=\"2\">$item</td>" >> "$temp_file"
-        echo "      <td>precio €</td>" >> "$temp_file"
+        echo "      <td colspan=\"2\">$element</td>" >> "$temp_file"
+        echo "      <td>${price} €</td>" >> "$temp_file"
         echo "    </tr>" >> "$temp_file"
         ((counter++))
     done < "$DIR/$file"
     # Inserta las nuevas filas debajo de "INSERT HERE"
-    awk -v line="$line" -v file="$temp_file" \
-        '/INSERT HERE/ {print; while ((getline line < file) > 0) { print line }; next}1' \
+    awk -v insert_line="$line" -v file="$temp_file" \
+        '1; /INSERT HERE/ {while ((getline line < file) > 0) print line}' \
         "$html_file" > "${html_file}.tmp" && mv "${html_file}.tmp" "$html_file"
     rm "$temp_file"
 }
