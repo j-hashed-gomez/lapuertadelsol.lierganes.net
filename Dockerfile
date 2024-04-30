@@ -39,5 +39,5 @@ RUN a2enmod rewrite
 # Expone el puerto 8080 para que sea accesible externamente
 EXPOSE 80
 
-# Ejecuta Apache en modo foreground
-CMD ["apache2-foreground"]
+# Comando para arrancar cron y Apache en primer plano
+CMD cron && apache2-foreground
