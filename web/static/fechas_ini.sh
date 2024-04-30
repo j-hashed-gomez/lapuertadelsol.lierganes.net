@@ -16,8 +16,8 @@ FILES=("carta.txt" "raciones.txt" "bocadillos.txt")
 for file in "${FILES[@]}"; do
     # Comprueba si el archivo existe
     if [[ -f "${DIR}/${file}" ]]; then
-        # Obtiene la fecha de última modificación en el formato AAAAMMDD
-        mod_date=$(date -r "${DIR}/${file}" +"%Y%m%d")
+        # Obtiene la fecha de última modificación en el formato AAAAMMDDHHMMSS
+        mod_date=$(date -r "${DIR}/${file}" +"%Y%m%d%H%M%S")
         # Escribe el resultado en el archivo de salida
         echo "${file}:${mod_date}" >> "$OUTPUT_FILE"
     else
