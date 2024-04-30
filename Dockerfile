@@ -1,30 +1,28 @@
-# Utilizar la imagen oficial de Debian stable
+# Usar Debian stable como imagen base
 FROM debian:stable-slim
 
-# Establecer el directorio de trabajo en el contenedor
+# Establecer el directorio de trabajo
 WORKDIR /app
 
-# Actualizar la lista de paquetes y instalar dependencias
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    python3-venv \
-    && rm -rf /var/lib/apt/lists/*
+# Instalar Python, pip y herramientas necesarias
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Crear un entorno virtual para la aplicación Python
-RUN python3 -m venv venv
+# Copiar los archivos de la aplicación al directorio de trabajo
+COPY . /app
 
-# Activar el entorno virtual
-ENV PATH="/app/venv/bin:$PATH"
+# Instalar Flask
+RUN pip3 install flask
 
-# Copiar los archivos de la aplicación Flask al contenedor
-COPY /web/static/* /app/
-
-# Instalar las dependencias de Flask usando pip
-RUN pip install --upgrade pip && pip install flask
-
-# Exponer el puerto que utilizará la aplicación Flask
+# Exponer el puerto 5000 para la aplicación Flask
 EXPOSE 5000
 
-# Comando para ejecutar la aplicación Flask
+# Establecer la variable de entorno para Flask
+ENV FLASK_APP=server.py
+ENV FLASK_RUN_HOST=0.0.0.1
+
+# Ejecutar la aplicación Flask cuando el contenedor inicie
 CMD ["flask", "run", "--host=0.0.0.0"]
+
