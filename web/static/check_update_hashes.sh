@@ -34,9 +34,9 @@ insert_content() {
     local counter=1
     # Lee el archivo línea por línea
     while IFS= read -r line; do
-        # Divide la línea en elementos y precio, eliminando espacios adicionales
-        IFS='::' read -r element price <<< "${line}"
-        price=$(echo "$price" | sed 's/^ *//;s/ *$//')  # Quita espacios al inicio y al final
+        # Divide la línea en elementos y precio
+        IFS='::' read -r element price <<< "$line"
+        price=$(echo "$price" | sed 's/://g')
         # Formato de la fila a insertar
         echo "    <tr>" >> "$temp_file"
         echo "      <th scope=\"row\">$counter</th>" >> "$temp_file"
@@ -47,7 +47,7 @@ insert_content() {
     done < "$DIR/$file"
     # Inserta las nuevas filas debajo de "INSERT HERE"
     awk -v insert_line="$line" -v file="$temp_file" \
-        '/INSERT HERE/ {print; while ((getline line < file) > 0) print line}' \
+        '1; /INSERT HERE/ {while ((getline line < file) > 0) print line}' \
         "$html_file" > "${html_file}.tmp" && mv "${html_file}.tmp" "$html_file"
     rm "$temp_file"
 }
