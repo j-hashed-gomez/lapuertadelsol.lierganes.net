@@ -18,7 +18,7 @@ RUN a2enmod rewrite
 
 # Copia los archivos del sitio web desde tu directorio local al directorio de Apache
 # Asegúrate de que el directorio 'src' contiene tu aplicación PHP
-COPY ./src/ /var/www/html/
+
 
 # Expone el puerto 8080 para que sea accesible externamente
 EXPOSE 8080
