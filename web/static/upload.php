@@ -1,6 +1,6 @@
 <?php
 // Directorio donde se guardarán los archivos subidos
-$target_dir = "/uploads/";
+$target_dir = "/var/www/html/uploads/";
 // Especifica la ruta del archivo a guardar
 $target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
 $uploadOk = 1;
