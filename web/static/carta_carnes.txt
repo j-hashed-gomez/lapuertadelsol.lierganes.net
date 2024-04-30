@@ -1,0 +1,3 @@
+Paco:10
+Pepe:20
+Juan:30
