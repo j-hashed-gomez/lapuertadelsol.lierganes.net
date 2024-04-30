@@ -1,4 +1,4 @@
-<Files "prueba.html">
+<Files "/var/www/static/prueba.html">
     AuthType Basic
     AuthName "Área Restringida"
     AuthUserFile /var/www/html/.htpasswd
