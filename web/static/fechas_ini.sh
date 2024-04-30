@@ -16,13 +16,13 @@ FILES=("carta.txt" "raciones.txt" "bocadillos.txt")
 for file in "${FILES[@]}"; do
     # Comprueba si el archivo existe
     if [[ -f "${DIR}/${file}" ]]; then
-        # Obtiene la fecha de última modificación en el formato AAAAMMDDHHMMSS
-        mod_date=$(date -r "${DIR}/${file}" +"%Y%m%d%H%M%S")
-        # Escribe el resultado en el archivo de salida
-        echo "${file}:${mod_date}" >> "$OUTPUT_FILE"
+        # Calcula el hash MD5 del archivo
+        md5_hash=$(md5sum "${DIR}/${file}" | awk '{ print $1 }')
+        # Escribe el resultado en el archivo de salida con el formato deseado
+        echo "${file}::${md5_hash}" >> "$OUTPUT_FILE"
     else
         echo "El archivo ${file} no existe en el directorio ${DIR}."
     fi
 done
 
-echo "Proceso completado. Las fechas de modificación han sido guardadas en ${OUTPUT_FILE}."
+echo "Proceso completado. Los hashes MD5 han sido guardados en ${OUTPUT_FILE}."
