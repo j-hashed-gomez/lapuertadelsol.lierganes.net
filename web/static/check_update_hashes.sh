@@ -28,16 +28,14 @@ update_hash() {
 # Función para insertar contenido en el archivo HTML
 insert_content() {
     local file="$1"
-    local line='INSERT HERE'
     local html_file="/var/www/html/${file%.txt}.html"
     local temp_file=$(mktemp)
     local counter=1
     # Lee el archivo línea por línea
     while IFS= read -r line; do
-        # Divide la línea en elementos y precio, manteniendo espacios en el elemento
-        IFS='::' read -r element price <<< "$line"
-        element=$(echo "$element" | sed 's/^ *//;s/ *$//') # Limpia espacios adicionales
-        price=$(echo "$price" | sed 's/^ *//;s/ *$//;s/://g') # Limpia y quita ':' del precio
+        # Ignora los dos puntos iniciales y divide la línea en elementos y precio
+        IFS='::' read -r _ element price <<< "$line"
+        price=$(echo "$price" | sed 's/://g')  # Limpia el precio
         # Formato de la fila a insertar
         echo "    <tr>" >> "$temp_file"
         echo "      <th scope=\"row\">$counter</th>" >> "$temp_file"
@@ -47,7 +45,7 @@ insert_content() {
         ((counter++))
     done < "$DIR/$file"
     # Inserta las nuevas filas debajo de "INSERT HERE"
-    awk -v insert_line="$line" -v file="$temp_file" \
+    awk -v insert_line="INSERT HERE" -v file="$temp_file" \
         '1; /INSERT HERE/ {while ((getline line < file) > 0) print line}' \
         "$html_file" > "${html_file}.tmp" && mv "${html_file}.tmp" "$html_file"
     rm "$temp_file"
