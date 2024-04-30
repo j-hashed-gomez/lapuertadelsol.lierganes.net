@@ -34,9 +34,10 @@ insert_content() {
     local counter=1
     # Lee el archivo línea por línea
     while IFS= read -r line; do
-        # Divide la línea en elementos y precio
+        # Divide la línea en elementos y precio, manteniendo espacios en el elemento
         IFS='::' read -r element price <<< "$line"
-        price=$(echo "$price" | sed 's/://g')
+        element=$(echo "$element" | sed 's/^ *//;s/ *$//') # Limpia espacios adicionales
+        price=$(echo "$price" | sed 's/^ *//;s/ *$//;s/://g') # Limpia y quita ':' del precio
         # Formato de la fila a insertar
         echo "    <tr>" >> "$temp_file"
         echo "      <th scope=\"row\">$counter</th>" >> "$temp_file"
