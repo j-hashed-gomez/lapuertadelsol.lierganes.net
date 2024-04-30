@@ -2,6 +2,11 @@
 FROM php:8.1-apache
 
 COPY ./web/static/ /var/www/html/
+RUN mkdir -p /var/www/html/uploads
+RUN chmod 755 /var/www/html/uploads
+RUN chown www-data:www-data /var/www/html/uploads
+
+
 
 # Actualiza los paquetes e instala cualquier actualización de seguridad necesaria
 RUN apt-get update && apt-get upgrade -y
