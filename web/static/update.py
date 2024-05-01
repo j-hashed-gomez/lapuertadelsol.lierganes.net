@@ -10,7 +10,7 @@ load_dotenv(dotenv_path)
 # Ruta donde se encuentran los archivos
 directory = "/var/www/html/uploads"
 # Lista de nombres de ficheros
-files = ["carta_carnes.txt", "carta_pescados.txt", "carta_postres.txt", "raciones.txt", "bocadillos.txt"]
+files = ["carta_carnes.txt", "carta_pescados.txt", "carta_postres.txt", "raciones.txt"]
 # Ruta del archivo log
 log_path = "/var/www/html/uploads/file_changes.log"
 
@@ -30,9 +30,6 @@ def update_html(file_name):
     elif file_name == "raciones.txt":
         html_file = "/var/www/html/raciones.html"
         section = 'RACIONES'
-    else:
-        html_file = "/var/www/html/bocadillos.html"
-        section = 'BOCADILLOS'
 
     start_marker = f"<!-- INICIO {section} -->"
     end_marker = f"<!-- FINAL {section} -->"
