@@ -20,14 +20,18 @@ def read_sections(html_path):
     with open(html_path, 'r') as file:
         content = file.readlines()
     current_section = None
+    file_tag = os.path.basename(html_path).split('.')[0].upper()  # Ejemplo: 'CARTA' o 'RACIONES' para carta.html y raciones.html
     for line in content:
-        if "<!-- INICIO " in line:
-            parts = line.strip().split()
-            if parts[1] == os.path.basename(html_path) and len(parts) > 2:
-                current_section = parts[2]
-        elif "<!-- FINAL " in line:
-            parts = line.strip().split()
-            if parts[1] == os.path.basename(html_path) and current_section and len(parts) > 2 and parts[2] == current_section:
+        line_upper = line.strip().upper()
+        if f"<!-- INICIO {file_tag}" in line_upper:
+            # Tomar todo después de 'INICIO {file_tag}' hasta el comentario de cierre para obtener el nombre de la sección
+            start = line_upper.find(f"INICIO {file_tag}") + len(f"INICIO {file_tag}") + 1
+            end = line_upper.find("-->")
+            current_section = line_upper[start:end].strip()
+        elif f"<!-- FINAL {file_tag}" in line_upper and current_section:
+            end_section = line_upper.find(f"FINAL {file_tag}") + len(f"FINAL {file_tag}") + 1
+            end_section_name = line_upper[end_section:line_upper.find("-->")].strip()
+            if current_section == end_section_name:
                 sections.append(current_section)
                 current_section = None
     return sections
@@ -36,15 +40,16 @@ def update_section(html_path, section, items):
     with open(html_path, 'r+') as file:
         content = file.readlines()
         start_index = end_index = None
+        section_upper = section.upper()
         for i, line in enumerate(content):
-            if f"<!-- INICIO {os.path.basename(html_path)} {section} -->" in line:
+            if f"<!-- INICIO {os.path.basename(html_path).split('.')[0].upper()} {section_upper} -->" in line.upper():
                 start_index = i + 1
-            elif f"<!-- FINAL {os.path.basename(html_path)} {section} -->" in line:
+            elif f"<!-- FINAL {os.path.basename(html_path).split('.')[0].upper()} {section_upper} -->" in line.upper():
                 end_index = i
                 break
         if start_index is not None and end_index is not None:
             content[start_index:end_index] = [
-                f"  <tr>\n    <th scope='row'>{index + 1}</th>\n    <td colspan='2'>{item.split('::')[0]}</td>\n    <td>{item.split('::')[1]} €</td>\n  </tr>\n"
+                f"  <tr>\\n    <th scope='row'>{index + 1}</th>\\n    <td colspan='2'>{item.split('::')[0]}</td>\\n    <td>{item.split('::')[1]} €</td>\\n  </tr>\\n"
                 for index, item in enumerate(items) if item.strip()
             ]
             file.seek(0)
@@ -86,7 +91,7 @@ def main():
         log(f"Processing {html_path}. Found sections: {', '.join(sections)}")
         
         for section in sections:
-            file_path = os.path.join(upload_path, f"{os.path.basename(html_path)}_{section}.txt")
+            file_path = os.path.join(upload_path, f"{os.path.basename(html_path).split('.')[0].lower()}_{section.replace(' ', '_').lower()}.txt")
             if os.path.exists(file_path):
                 current_hash = md5_hash(file_path)
                 current_hashes[section] = current_hash
