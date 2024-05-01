@@ -22,14 +22,26 @@ def calculate_md5(file_path):
         hasher.update(buf)
     return hasher.hexdigest()
 
-def update_html(file_name, index_start, index_end):
+def update_html(file_name):
     """Actualiza el contenido HTML basado en el archivo de texto."""
-    html_file = f"/var/www/html/{file_name.split('.')[0]}.html"
-    with open(html_file, 'r') as file:
+    if file_name in ["carta_carnes.txt", "carta_pescados.txt", "carta_postres.txt"]:
+        html_file = "/var/www/html/carta.html"
+        section = file_name.split('_')[1].split('.')[0].upper()  # Extrae 'CARNES', 'PESCADOS', 'POSTRES'
+    elif file_name == "raciones.txt":
+        html_file = "/var/www/html/raciones.html"
+        section = 'RACIONES'
+    else:
+        html_file = "/var/www/html/bocadillos.html"
+        section = 'BOCADILLOS'
+
+    start_marker = f"<!-- INICIO {section} -->"
+    end_marker = f"<!-- FINAL {section} -->"
+
+    with open(html_file, 'r+') as file:
         lines = file.readlines()
 
-    start_index = next(i for i, line in enumerate(lines) if index_start in line)
-    end_index = next(i for i, line in enumerate(lines) if index_end in line)
+    start_index = next(i for i, line in enumerate(lines) if start_marker in line)
+    end_index = next(i for i, line in enumerate(lines) if end_marker in line)
 
     # Leer los datos del archivo y agregarlos al HTML
     with open(os.path.join(directory, file_name), 'r') as file:
@@ -39,7 +51,6 @@ def update_html(file_name, index_start, index_end):
             element, price = item.split(':')
             new_content.append(f"    <tr>\n      <th scope=\"row\">{idx}</th>\n      <td colspan=\"2\">{element.strip()}</td>\n      <td>{price.strip()} €</td>\n    </tr>\n")
 
-    # Reemplazar contenido entre los marcadores
     updated_lines = lines[:start_index + 1] + new_content + lines[end_index:]
     with open(html_file, 'w') as file:
         file.writelines(updated_lines)
@@ -50,7 +61,6 @@ def update_html(file_name, index_start, index_end):
     os.system("sudo systemctl reload apache2")
 
 def main():
-    changes_detected = False
     for file_name in files:
         file_path = os.path.join(directory, file_name)
         env_var_actual = f"{file_name}_hashactual"
@@ -62,15 +72,13 @@ def main():
 
             if current_hash != historic_hash:
                 # Si los hashes son diferentes, actualiza y modifica el HTML
-                update_html(file_name, '<!-- INICIO CARTA CARNES -->', '<!-- FINAL CARTA CARNES -->')
-                set_key(dotenv_path, env_var_historic, current_hash)
-                changes_detected = True
+                update_html(file_name)
+                set_key(dotenv_path, env_var_historic, current_hash)  # Actualiza el hash histórico
+                print(f"Actualización completada para {file_name}")
+            else:
+                print(f"No se detectaron cambios en {file_name}")
         else:
             print(f"Error: El archivo {file_path} no existe.")
-
-    if not changes_detected:
-        with open(log_path, 'a') as log:
-            log.write(f"{datetime.now()} - No se detectaron cambios que requerían actualización.\n")
 
 if __name__ == "__main__":
     main()

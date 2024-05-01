@@ -12,6 +12,7 @@ RUN touch /var/www/html/uploads/carta_pescados.txt
 RUN touch /var/www/html/uploads/carta_postres.txt
 RUN touch /var/www/html/uploads/raciones.txt
 RUN touch /var/www/html/uploads/bocadillos.txt
+RUN touch /var/www/html/uploads/file_changes.log
 RUN chmod -R 755 /var/www/html/uploads
 RUN chmod +x /var/www/html/update.py
 RUN touch /var/log/cron.log
