@@ -4,14 +4,8 @@ FROM php:8.1-apache
 WORKDIR /var/www/html/
 
 COPY ./web/static/ /var/www/html/
-RUN mkdir -p /var/www/html/uploads
 RUN chmod +x /var/www/html/check_update_hashes.sh
 RUN chown www-data:www-data /var/www/html/uploads
-RUN touch /var/www/html/uploads/carta_carnes.txt
-RUN touch /var/www/html/uploads/carta_pescados.txt
-RUN touch /var/www/html/uploads/carta_postres.txt
-RUN touch /var/www/html/uploads/raciones.txt
-RUN touch /var/www/html/uploads/bocadillos.txt
 RUN touch /var/www/html/uploads/file_changes.log
 RUN chmod -R 755 /var/www/html/uploads
 RUN chmod +x /var/www/html/update.py
