@@ -1,6 +1,7 @@
 import hashlib
 import os
 import datetime
+import subprocess
 
 def log(message, warning=False):
     prefix = "WARNING: " if warning else ""
@@ -20,7 +21,9 @@ def read_sections(html_path):
     current_section = None
     for line in content:
         if "<!-- INICIO CARTA" in line:
-            current_section = line.split()[3]
+            start = line.find('CARTA') + 6
+            end = line.find('-->', start) - 1
+            current_section = line[start:end].strip()
         elif "<!-- FINAL CARTA" in line and current_section:
             sections.append(current_section)
             current_section = None
@@ -36,7 +39,7 @@ def update_section(html_path, section, items):
             elif f"<!-- FINAL CARTA {section} -->" in line:
                 end_index = i
                 break
-        if start_index and end_index:
+        if start_index is not None and end_index is not None:
             content[start_index:end_index] = [
                 f"  <tr>\n    <th scope='row'>{index + 1}</th>\n    <td colspan='2'>{item.split('::')[0]}</td>\n    <td>{item.split('::')[1]} €</td>\n  </tr>\n"
                 for index, item in enumerate(items) if item.strip()
@@ -47,21 +50,30 @@ def update_section(html_path, section, items):
             log(f"Section {section} has been updated.")
 
 def restart_apache():
-    os.system('sudo systemctl restart apache2')
-    log("Apache service has been restarted successfully.")
+    try:
+        subprocess.run(['/etc/init.d/apache2', 'reload'], check=True)
+        log("Apache service has been reloaded successfully.")
+    except subprocess.CalledProcessError:
+        log("Failed to reload Apache service.", warning=True)
 
 def main():
     html_path = "/var/www/html/carta.html"
+    upload_path = "/var/www/html/uploads/"
     sections = read_sections(html_path)
-    prev_hashes = {section: md5_hash(f"carta_{section}.txt") for section in sections if os.path.exists(f"carta_{section}.txt")}
+    prev_hashes = {}
     
     log(f"Found sections: {', '.join(sections)}")
     
     for section in sections:
-        file_path = f"carta_{section}.txt"
-        if not os.path.exists(file_path):
-            log(f"Missing definition file for section {section}", warning=True)
+        file_path = os.path.join(upload_path, f"carta_{section}.txt")
+        if os.path.exists(file_path):
+            prev_hashes[section] = md5_hash(file_path)
         else:
+            log(f"Missing definition file for section {section}", warning=True)
+    
+    for section in sections:
+        file_path = os.path.join(upload_path, f"carta_{section}.txt")
+        if os.path.exists(file_path):
             with open(file_path, 'r') as file:
                 items = file.readlines()
                 new_hash = md5_hash(file_path)
