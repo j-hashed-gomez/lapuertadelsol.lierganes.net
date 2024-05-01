@@ -1,5 +1,6 @@
 import hashlib
 import os
+import json
 import datetime
 import subprocess
 
@@ -48,40 +49,58 @@ def update_section(html_path, section, items):
             file.writelines(content)
             file.truncate()
             log(f"Section {section} has been updated.")
+            return True  # Return True indicating that an update has occurred
+    return False
 
-def restart_apache():
+def reload_apache():
     try:
         subprocess.run(['/etc/init.d/apache2', 'reload'], check=True)
         log("Apache service has been reloaded successfully.")
     except subprocess.CalledProcessError:
         log("Failed to reload Apache service.", warning=True)
 
+def load_prev_hashes(file_path):
+    if os.path.exists(file_path):
+        with open(file_path, 'r') as f:
+            return json.load(f)
+    else:
+        return {}
+
+def save_hashes(file_path, hashes):
+    with open(file_path, 'w') as f:
+        json.dump(hashes, f)
+
 def main():
     html_path = "/var/www/html/carta.html"
     upload_path = "/var/www/html/uploads/"
+    hash_file = "/var/www/html/hashes.json"
     sections = read_sections(html_path)
-    prev_hashes = {}
-    
+    prev_hashes = load_prev_hashes(hash_file)
+    current_hashes = {}
+    update_required = False  # Flag to track if any updates are necessary
+
     log(f"Found sections: {', '.join(sections)}")
     
+    # Convert section names to lowercase for file matching
     for section in sections:
-        file_path = os.path.join(upload_path, f"carta_{section}.txt")
+        file_path = os.path.join(upload_path, f"carta_{section.lower()}.txt")
         if os.path.exists(file_path):
-            prev_hashes[section] = md5_hash(file_path)
+            current_hash = md5_hash(file_path)
+            current_hashes[section] = current_hash
+            if section not in prev_hashes or current_hash != prev_hashes[section]:
+                log(f"Section {section} will be updated due to definition changes.")
+                with open(file_path, 'r') as file:
+                    items = file.readlines()
+                    if update_section(html_path, section, items):
+                        update_required = True  # Set the flag to True as updates are applied
         else:
             log(f"Missing definition file for section {section}", warning=True)
     
-    for section in sections:
-        file_path = os.path.join(upload_path, f"carta_{section}.txt")
-        if os.path.exists(file_path):
-            with open(file_path, 'r') as file:
-                items = file.readlines()
-                new_hash = md5_hash(file_path)
-                if new_hash != prev_hashes.get(section, None):
-                    log(f"Section {section} will be updated due to definition changes.")
-                    update_section(html_path, section, items)
-                    
-    restart_apache()
+    # Save the current hashes for future reference
+    save_hashes(hash_file, current_hashes)
+    
+    if update_required:
+        reload_apache()  # Reload Apache only if updates have been made
 
 if __name__ == "__main__":
     main()
