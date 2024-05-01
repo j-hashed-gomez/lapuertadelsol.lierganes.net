@@ -3,13 +3,16 @@ FROM php:8.1-apache
 
 COPY ./web/static/ /var/www/html/
 RUN mkdir -p /var/www/html/uploads
-RUN chmod +x /var/www/html/fechas_ini.sh
 RUN chmod +x /var/www/html/check_update_hashes.sh
 RUN chown www-data:www-data /var/www/html/uploads
-RUN touch /var/www/html/uploads/carta.txt
+RUN touch /var/www/html/uploads/carta_carnes.txt
+RUN touch /var/www/html/uploads/carta_pescados.txt
+RUN touch /var/www/html/uploads/carta_postres.txt
 RUN touch /var/www/html/uploads/raciones.txt
 RUN touch /var/www/html/uploads/bocadillos.txt
 RUN chmod -R 755 /var/www/html/uploads
+RUN chmod +x /var/www/html/update.py
+RUN touch /var/log/cron.log
 
 # Crea el archivo .htpasswd y añade las líneas con los usuarios y contraseñas
 RUN echo 'jose:$2y$05$Z/PtGDfz9yJPvblW7xMcNOT8utvLmPl2Rw1F5Ej6mqfc7GUrejz8O' > /var/www/html/.htpasswd \
@@ -20,13 +23,18 @@ RUN echo 'jose:$2y$05$Z/PtGDfz9yJPvblW7xMcNOT8utvLmPl2Rw1F5Ej6mqfc7GUrejz8O' > /
 RUN chmod 644 /var/www/html/.htpasswd
 
 # Actualiza los paquetes e instala cualquier actualización de seguridad necesaria
-RUN apt-get update && apt-get upgrade -y && apt-get install -y cron
+RUN apt-get update && apt-get upgrade -y && apt-get install -y cron python3 python3-pip 
+RUN pip install python-dotenv
+
+RUN echo "* * * * * root python3 /var/www/html/update.py >> /var/log/cron.log 2>&1" > /etc/cron.d/update-cron
+RUN chmod 0644 /etc/cron.d/update-cron
+RUN crontab /etc/cron.d/update-cron
 
 # Configura el cron job para que se ejecute al reiniciar
-RUN echo "@reboot root /var/www/html/fechas_ini.sh >> /var/www/html/fechas.log 2>&1" > /etc/cron.d/fechas_job
-RUN chmod 0644 /etc/cron.d/fechas_job
-RUN crontab /etc/cron.d/fechas_job
-RUN (crontab -l ; echo "* * * * * /var/www/html/check_update_hashes.sh >> /var/www/html/check_update_hashes.log 2>&1") | crontab - 
+#RUN echo "@reboot root /var/www/html/fechas_ini.sh >> /var/www/html/fechas.log 2>&1" > /etc/cron.d/fechas_job
+#RUN chmod 0644 /etc/cron.d/fechas_job
+#RUN crontab /etc/cron.d/fechas_job
+#RUN (crontab -l ; echo "* * * * * /var/www/html/check_update_hashes.sh >> /var/www/html/check_update_hashes.log 2>&1") | crontab - 
 
 
 # Configura AllowOverride para el directorio de Apache
