@@ -24,7 +24,13 @@ RUN chmod 644 /var/www/html/.htpasswd
 
 # Actualiza los paquetes e instala cualquier actualización de seguridad necesaria
 RUN apt-get update && apt-get upgrade -y && apt-get install -y cron python3 python3-pip 
-RUN pip install python-dotenv
+
+
+# Crear un entorno virtual dentro del contenedor y activarlo
+RUN python -m venv /venv
+ENV PATH="/venv/bin:$PATH"
+
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
 RUN echo "* * * * * root python3 /var/www/html/update.py >> /var/log/cron.log 2>&1" > /etc/cron.d/update-cron
 RUN chmod 0644 /etc/cron.d/update-cron
