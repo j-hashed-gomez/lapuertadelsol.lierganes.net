@@ -1,74 +1,75 @@
 import hashlib
 import os
-from datetime import datetime
-from dotenv import load_dotenv, set_key
+import datetime
 
-# Carga las variables de entorno desde el archivo .env
-dotenv_path = "/var/www/html/uploads/.env"
-load_dotenv(dotenv_path)
+def log(message, warning=False):
+    prefix = "WARNING: " if warning else ""
+    print(f"{datetime.datetime.now()} - {prefix}{message}")
 
-# Ruta donde se encuentran los archivos
-directory = "/var/www/html/uploads"
-# Lista de nombres de ficheros, sin incluir bocadillos.txt
-files = ["carta_carnes.txt", "carta_pescados.txt", "carta_postres.txt", "raciones.txt"]
-# Ruta del archivo log
-log_path = "/var/www/html/uploads/file_changes.log"
-
-def calculate_md5(file_path):
-    """Calcula el hash MD5 de un archivo."""
+def md5_hash(file_path):
     hasher = hashlib.md5()
     with open(file_path, 'rb') as f:
         buf = f.read()
         hasher.update(buf)
     return hasher.hexdigest()
 
-def update_html(file_name):
-    """Actualiza el contenido HTML basado en el archivo de texto."""
-    if "carta" in file_name:
-        html_file = "/var/www/html/carta.html"
-        section = file_name.split('_')[1].split('.')[0].upper()  # Extrae 'CARNES', 'PESCADOS', 'POSTRES'
-    elif file_name == "raciones.txt":
-        html_file = "/var/www/html/raciones.html"
-        section = 'RACIONES'
+def read_sections(html_path):
+    sections = []
+    with open(html_path, 'r') as file:
+        content = file.readlines()
+    current_section = None
+    for line in content:
+        if "<!-- INICIO CARTA" in line:
+            current_section = line.split()[3]
+        elif "<!-- FINAL CARTA" in line and current_section:
+            sections.append(current_section)
+            current_section = None
+    return sections
 
-    start_marker = f"<!-- INICIO {section} -->"
-    end_marker = f"<!-- FINAL {section} -->"
+def update_section(html_path, section, items):
+    with open(html_path, 'r+') as file:
+        content = file.readlines()
+        start_index = end_index = None
+        for i, line in enumerate(content):
+            if f"<!-- INICIO CARTA {section} -->" in line:
+                start_index = i + 1
+            elif f"<!-- FINAL CARTA {section} -->" in line:
+                end_index = i
+                break
+        if start_index and end_index:
+            content[start_index:end_index] = [
+                f"  <tr>\n    <th scope='row'>{index + 1}</th>\n    <td colspan='2'>{item.split('::')[0]}</td>\n    <td>{item.split('::')[1]} €</td>\n  </tr>\n"
+                for index, item in enumerate(items) if item.strip()
+            ]
+            file.seek(0)
+            file.writelines(content)
+            file.truncate()
+            log(f"Section {section} has been updated.")
 
-    try:
-        with open(html_file, 'r') as file:
-            lines = file.readlines()
-        
-        start_index = next(i for i, line in enumerate(lines) if start_marker in line)
-        end_index = next(i for i, line in enumerate(lines) if end_marker in line)
-
-        # Leer los datos del archivo y agregarlos al HTML
-        with open(os.path.join(directory, file_name), 'r') as file:
-            items = [line.strip() for line in file if line.strip() and ':' in line]
-            new_content = []
-            for idx, item in enumerate(items, 1):
-                element, price = item.split(':')
-                new_content.append(f"    <tr>\n      <th scope=\"row\">{idx}</th>\n      <td colspan=\"2\">{element.strip()}</td>\n      <td>{price.strip()} €</td>\n    </tr>\n")
-
-        updated_lines = lines[:start_index + 1] + new_content + lines[end_index:]
-        with open(html_file, 'w') as file:
-            file.writelines(updated_lines)
-
-        # Log y recargar Apache
-        with open(log_path, 'a') as log:
-            log.write(f"{datetime.now()} - Actualizado {html_file}, recargando Apache.\n")
-        os.system("sudo systemctl reload apache2")
-
-    except StopIteration:
-        print(f"No se encontraron los marcadores {start_marker} o {end_marker} en {html_file}.")
-    except FileNotFoundError:
-        print(f"El archivo {html_file} no se encontró.")
-    except Exception as e:
-        print(f"Ocurrió un error al actualizar el archivo HTML: {str(e)}")
+def restart_apache():
+    os.system('sudo systemctl restart apache2')
+    log("Apache service has been restarted successfully.")
 
 def main():
-    for file_name in files:
-        file_path = os.path.join(directory, file_name)
-        update_html(file_name)
+    html_path = "/var/www/html/carta.html"
+    sections = read_sections(html_path)
+    prev_hashes = {section: md5_hash(f"carta_{section}.txt") for section in sections if os.path.exists(f"carta_{section}.txt")}
+    
+    log(f"Found sections: {', '.join(sections)}")
+    
+    for section in sections:
+        file_path = f"carta_{section}.txt"
+        if not os.path.exists(file_path):
+            log(f"Missing definition file for section {section}", warning=True)
+        else:
+            with open(file_path, 'r') as file:
+                items = file.readlines()
+                new_hash = md5_hash(file_path)
+                if new_hash != prev_hashes.get(section, None):
+                    log(f"Section {section} will be updated due to definition changes.")
+                    update_section(html_path, section, items)
+                    
+    restart_apache()
 
 if __name__ == "__main__":
     main()

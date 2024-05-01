@@ -1,75 +1,139 @@
-import hashlib
-import os
-import datetime
+<!DOCTYPE html>
+<html lang="es">
 
-def log(message, warning=False):
-    prefix = "WARNING: " if warning else ""
-    print(f"{datetime.datetime.now()} - {prefix}{message}")
+<head>
 
-def md5_hash(file_path):
-    hasher = hashlib.md5()
-    with open(file_path, 'rb') as f:
-        buf = f.read()
-        hasher.update(buf)
-    return hasher.hexdigest()
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
 
-def read_sections(html_path):
-    sections = []
-    with open(html_path, 'r') as file:
-        content = file.readlines()
-    current_section = None
-    for line in content:
-        if "<!-- INICIO CARTA" in line:
-            current_section = line.split()[3]
-        elif "<!-- FINAL CARTA" in line and current_section:
-            sections.append(current_section)
-            current_section = None
-    return sections
+  <title>La Puerta del Sol</title>
 
-def update_section(html_path, section, items):
-    with open(html_path, 'r+') as file:
-        content = file.readlines()
-        start_index = end_index = None
-        for i, line in enumerate(content):
-            if f"<!-- INICIO CARTA {section} -->" in line:
-                start_index = i + 1
-            elif f"<!-- FINAL CARTA {section} -->" in line:
-                end_index = i
-                break
-        if start_index and end_index:
-            content[start_index:end_index] = [
-                f"  <tr>\n    <th scope='row'>{index + 1}</th>\n    <td colspan='2'>{item.split('::')[0]}</td>\n    <td>{item.split('::')[1]} €</td>\n  </tr>\n"
-                for index, item in enumerate(items) if item.strip()
-            ]
-            file.seek(0)
-            file.writelines(content)
-            file.truncate()
-            log(f"Section {section} has been updated.")
+  <!-- Bootstrap core CSS -->
+  <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 
-def restart_apache():
-    os.system('sudo systemctl restart apache2')
-    log("Apache service has been restarted successfully.")
+  <!-- Custom fonts for this template -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Lora:400,400i,700,700i" rel="stylesheet">
 
-def main():
-    html_path = "/var/www/html/carta.html"
-    sections = read_sections(html_path)
-    prev_hashes = {section: md5_hash(f"carta_{section}.txt") for section in sections if os.path.exists(f"carta_{section}.txt")}
-    
-    log(f"Found sections: {', '.join(sections)}")
-    
-    for section in sections:
-        file_path = f"carta_{section}.txt"
-        if not os.path.exists(file_path):
-            log(f"Missing definition file for section {section}", warning=True)
-        else:
-            with open(file_path, 'r') as file:
-                items = file.readlines()
-                new_hash = md5_hash(file_path)
-                if new_hash != prev_hashes.get(section, None):
-                    log(f"Section {section} will be updated due to definition changes.")
-                    update_section(html_path, section, items)
-                    
-    restart_apache()
+  <!-- Custom styles for this template -->
+  <link href="css/business-casual.min.css" rel="stylesheet">
 
-if __name__ == "__main__":
-    main()
+</head>
+
+<body>
+
+  <h1 class="site-heading text-center text-white d-none d-lg-block">
+    <span class="site-heading-upper text-primary mb-3">Un Restaurante con Leyenda</span>
+    <span class="site-heading-lower">La puerta del Sol</span>
+  </h1>
+
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark py-lg-4" id="mainNav">
+    <div class="container">
+      <a class="navbar-brand text-uppercase text-expanded font-weight-bold d-lg-none" href="#">La Puerta del Sol</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+        <ul class="navbar-nav mx-auto">
+          <li class="nav-item px-lg-4">
+            <a class="nav-link text-uppercase text-expanded" href="index.html">Inicio
+              <span class="sr-only">(current)</span>
+            </a>
+          </li>
+          <li class="nav-item px-lg-4">
+            <a class="nav-link text-uppercase text-expanded" href="carta.html">Carta</a>
+          </li>
+          <li class="nav-item px-lg-4">
+            <a class="nav-link text-uppercase text-expanded" href="horario.html">Horario</a>
+          </li>
+          <li class="nav-item px-lg-4">
+            <a class="nav-link text-uppercase text-expanded" href="upload.html">Actualizar</a>
+          </li>
+<!-- 
+		  <li class="nav-item px-lg-4">
+            <a class="nav-link text-uppercase text-expanded" href="menus.html">Menús</a>
+          </li>
+          <li class="nav-item px-lg-4">
+            <a class="nav-link text-uppercase text-expanded" href="carta.html">Carta</a>
+          </li>
+          <li class="nav-item px-lg-4">
+            <a class="nav-link text-uppercase text-expanded" href="bodega.html">Bodega</a>
+			<span class="sr-only">(current)</span>
+          </li>
+          <li class="nav-item px-lg-4">
+            <a class="nav-link text-uppercase text-expanded" href="horario.html">Horario</a>
+          </li>
+-->
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <section class="page-section about-heading">
+    <div class="container">
+      <img class="img-fluid rounded about-heading-img mb-3 mb-lg-0" src="img/carta.jpg" alt="">
+      <div class="about-heading-content">
+        <div class="row">
+          <div class="col-xl-9 col-lg-10 mx-auto">
+            <div class="bg-faded rounded p-5">
+              <h2 class="section-heading mb-4">
+                <span class="section-heading-upper">Comida de Cantabria, Comida con Raices</span>
+                <span class="section-heading-lower">Hoy vamos a la carta...</span>
+              </h2>
+
+<table class="table table-sm">
+  <thead>
+         <p style="text-align:center;"><u>Carnes</u></p>
+<!-- INICIO CARTA CARNES -->
+<!-- FINAL CARTA CARNES -->
+  </thead>
+  <tbody>
+
+<table class="table table-sm">
+  <thead>
+         <p style="text-align:center;"><u>Pescados</u></p>
+<!-- INICIO CARTA PESCADOS -->
+<!-- FINAL CARTA PESCADOS -->
+    <tr>
+      <th scope="col"></th>
+      <th scope="col"></th>
+      <th scope="col"></th>
+    </tr>
+  </thead>
+  <tbody>
+
+  </tbody>
+</table>
+
+<table class="table table-sm">
+  <thead>
+         <p style="text-align:center;"><u>Postres</u></p>
+<!-- INICIO CARTA POSTRES -->
+<!-- FINAL CARTA POSTRES -->
+    <tr>
+      <th scope="col"></th>
+      <th scope="col"></th>
+      <th scope="col"></th>
+    </tr>
+  </thead>
+  <tbody>
+
+  </tbody>
+</table>
+  <footer class="footer text-faded text-center py-5">
+    <div class="container">
+      <p class="m-0 small">Copyright &copy; https://lierganeslapuertadelsol.es 2020</p>
+	  <p class="m-0 small">Calle Juan, Jan Curtius, 33, 39722 Liérganes (+34 942 52 82 01)</p>
+    </div>
+  </footer>
+
+  <!-- Bootstrap core JavaScript -->
+  <script src="vendor/jquery/jquery.min.js"></script>
+  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>
