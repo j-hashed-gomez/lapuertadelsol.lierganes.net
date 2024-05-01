@@ -27,7 +27,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y cron python3 pyth
 
 
 # Crear un entorno virtual dentro del contenedor y activarlo
-RUN python -m venv /venv
+RUN python3 -m venv /venv
 ENV PATH="/venv/bin:$PATH"
 
 RUN pip install --upgrade pip && pip install -r requirements.txt
