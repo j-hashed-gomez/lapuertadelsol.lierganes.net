@@ -8,7 +8,7 @@ dotenv_path = "/var/www/html/uploads/.env"
 load_dotenv(dotenv_path)
 
 # Ruta donde se encuentran los archivos
-directory = "/var/www/html/uploads/"
+directory = "/var/www/html/uploads"
 # Lista de nombres de ficheros
 files = ["carta_carnes.txt", "carta_pescados.txt", "carta_postres.txt", "raciones.txt", "bocadillos.txt"]
 # Ruta del archivo log
@@ -22,6 +22,33 @@ def calculate_md5(file_path):
         hasher.update(buf)
     return hasher.hexdigest()
 
+def update_html(file_name, index_start, index_end):
+    """Actualiza el contenido HTML basado en el archivo de texto."""
+    html_file = f"/var/www/html/{file_name.split('.')[0]}.html"
+    with open(html_file, 'r') as file:
+        lines = file.readlines()
+
+    start_index = next(i for i, line in enumerate(lines) if index_start in line)
+    end_index = next(i for i, line in enumerate(lines) if index_end in line)
+
+    # Leer los datos del archivo y agregarlos al HTML
+    with open(os.path.join(directory, file_name), 'r') as file:
+        items = [line.strip() for line in file if line.strip() and ':' in line]
+        new_content = []
+        for idx, item in enumerate(items, 1):
+            element, price = item.split(':')
+            new_content.append(f"    <tr>\n      <th scope=\"row\">{idx}</th>\n      <td colspan=\"2\">{element.strip()}</td>\n      <td>{price.strip()} €</td>\n    </tr>\n")
+
+    # Reemplazar contenido entre los marcadores
+    updated_lines = lines[:start_index + 1] + new_content + lines[end_index:]
+    with open(html_file, 'w') as file:
+        file.writelines(updated_lines)
+
+    # Log y recargar Apache
+    with open(log_path, 'a') as log:
+        log.write(f"{datetime.now()} - Actualizado {html_file}, recargando Apache.\n")
+    os.system("sudo systemctl reload apache2")
+
 def main():
     changes_detected = False
     for file_name in files:
@@ -33,19 +60,17 @@ def main():
             current_hash = calculate_md5(file_path)
             historic_hash = os.getenv(env_var_historic, '')
 
-            if current_hash == historic_hash:
-                with open(log_path, 'a') as log_file:
-                    log_file.write(f"{datetime.now()} - No hay cambios que aplicar para {file_name}\n")
-            else:
-                set_key(dotenv_path, env_var_historic, current_hash)  # Actualiza el .env con el nuevo hash
-                with open(log_path, 'a') as log_file:
-                    log_file.write(f"{datetime.now()} - Cambios detectados y aplicados para {file_name}\n")
+            if current_hash != historic_hash:
+                # Si los hashes son diferentes, actualiza y modifica el HTML
+                update_html(file_name, '<!-- INICIO CARTA CARNES -->', '<!-- FINAL CARTA CARNES -->')
+                set_key(dotenv_path, env_var_historic, current_hash)
                 changes_detected = True
         else:
             print(f"Error: El archivo {file_path} no existe.")
 
     if not changes_detected:
-        exit()
+        with open(log_path, 'a') as log:
+            log.write(f"{datetime.now()} - No se detectaron cambios que requerían actualización.\n")
 
 if __name__ == "__main__":
     main()
