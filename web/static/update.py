@@ -49,7 +49,7 @@ def update_section(html_path, section, items):
                 break
         if start_index is not None and end_index is not None:
             content[start_index:end_index] = [
-                f"  <tr>\\n    <th scope='row'>{index + 1}</th>\\n    <td colspan='2'>{item.split('::')[0]}</td>\\n    <td>{item.split('::')[1]} €</td>\\n  </tr>\\n"
+                f"  <tr>    <th scope='row'>{index + 1}</th>    <td colspan='2'>{item.split('::')[0]}</td>    <td>{item.split('::')[1]} €</td>  </tr>"
                 for index, item in enumerate(items) if item.strip()
             ]
             file.seek(0)
