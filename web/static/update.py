@@ -21,13 +21,15 @@ def read_sections(html_path):
         content = file.readlines()
     current_section = None
     for line in content:
-        if "<!-- INICIO CARTA" in line:
-            start = line.find('CARTA') + 6
-            end = line.find('-->', start) - 1
-            current_section = line[start:end].strip()
-        elif "<!-- FINAL CARTA" in line and current_section:
-            sections.append(current_section)
-            current_section = None
+        if "<!-- INICIO " in line:
+            parts = line.strip().split()
+            if parts[1] == os.path.basename(html_path) and len(parts) > 2:
+                current_section = parts[2]
+        elif "<!-- FINAL " in line:
+            parts = line.strip().split()
+            if parts[1] == os.path.basename(html_path) and current_section and len(parts) > 2 and parts[2] == current_section:
+                sections.append(current_section)
+                current_section = None
     return sections
 
 def update_section(html_path, section, items):
@@ -35,9 +37,9 @@ def update_section(html_path, section, items):
         content = file.readlines()
         start_index = end_index = None
         for i, line in enumerate(content):
-            if f"<!-- INICIO CARTA {section} -->" in line:
+            if f"<!-- INICIO {os.path.basename(html_path)} {section} -->" in line:
                 start_index = i + 1
-            elif f"<!-- FINAL CARTA {section} -->" in line:
+            elif f"<!-- FINAL {os.path.basename(html_path)} {section} -->" in line:
                 end_index = i
                 break
         if start_index is not None and end_index is not None:
@@ -48,8 +50,8 @@ def update_section(html_path, section, items):
             file.seek(0)
             file.writelines(content)
             file.truncate()
-            log(f"Section {section} has been updated.")
-            return True  # Return True indicating that an update has occurred
+            log(f"Section {section} in {os.path.basename(html_path)} has been updated.")
+            return True
     return False
 
 def reload_apache():
@@ -71,36 +73,36 @@ def save_hashes(file_path, hashes):
         json.dump(hashes, f)
 
 def main():
-    html_path = "/var/www/html/carta.html"
+    html_files = ["/var/www/html/carta.html", "/var/www/html/raciones.html"]
     upload_path = "/var/www/html/uploads/"
     hash_file = "/var/www/html/hashes.json"
-    sections = read_sections(html_path)
-    prev_hashes = load_prev_hashes(hash_file)
-    current_hashes = {}
-    update_required = False  # Flag to track if any updates are necessary
 
-    log(f"Found sections: {', '.join(sections)}")
-    
-    # Convert section names to lowercase for file matching
-    for section in sections:
-        file_path = os.path.join(upload_path, f"carta_{section.lower()}.txt")
-        if os.path.exists(file_path):
-            current_hash = md5_hash(file_path)
-            current_hashes[section] = current_hash
-            if section not in prev_hashes or current_hash != prev_hashes[section]:
-                log(f"Section {section} will be updated due to definition changes.")
-                with open(file_path, 'r') as file:
-                    items = file.readlines()
-                    if update_section(html_path, section, items):
-                        update_required = True  # Set the flag to True as updates are applied
-        else:
-            log(f"Missing definition file for section {section}", warning=True)
-    
-    # Save the current hashes for future reference
-    save_hashes(hash_file, current_hashes)
-    
-    if update_required:
-        reload_apache()  # Reload Apache only if updates have been made
+    for html_path in html_files:
+        sections = read_sections(html_path)
+        prev_hashes = load_prev_hashes(hash_file)
+        current_hashes = {}
+        update_required = False
+
+        log(f"Processing {html_path}. Found sections: {', '.join(sections)}")
+        
+        for section in sections:
+            file_path = os.path.join(upload_path, f"{os.path.basename(html_path)}_{section}.txt")
+            if os.path.exists(file_path):
+                current_hash = md5_hash(file_path)
+                current_hashes[section] = current_hash
+                if section not in prev_hashes or current_hash != prev_hashes[section]:
+                    log(f"Section {section} in {os.path.basename(html_path)} will be updated due to definition changes.")
+                    with open(file_path, 'r') as file:
+                        items = file.readlines()
+                        if update_section(html_path, section, items):
+                            update_required = True
+            else:
+                log(f"Missing definition file for section {section} in {os.path.basename(html_path)}", warning=True)
+
+        save_hashes(hash_file, current_hashes)
+
+        if update_required:
+            reload_apache()
 
 if __name__ == "__main__":
     main()
