@@ -20,11 +20,10 @@ def read_sections(html_path):
     with open(html_path, 'r') as file:
         content = file.readlines()
     current_section = None
-    file_tag = os.path.basename(html_path).split('.')[0].upper()  # Ejemplo: 'CARTA' o 'RACIONES' para carta.html y raciones.html
+    file_tag = os.path.basename(html_path).split('.')[0].upper()
     for line in content:
         line_upper = line.strip().upper()
         if f"<!-- INICIO {file_tag}" in line_upper:
-            # Tomar todo después de 'INICIO {file_tag}' hasta el comentario de cierre para obtener el nombre de la sección
             start = line_upper.find(f"INICIO {file_tag}") + len(f"INICIO {file_tag}") + 1
             end = line_upper.find("-->")
             current_section = line_upper[start:end].strip()
@@ -48,14 +47,16 @@ def update_section(html_path, section, items):
                 end_index = i
                 break
         if start_index is not None and end_index is not None:
-            content[start_index:end_index] = [
-                f"  <tr>    <th scope='row'>{index + 1}</th>    <td colspan='2'>{item.split('::')[0]}</td>    <td>{item.split('::')[1]} €</td>  </tr>"
+            content = content[:start_index] + content[end_index:]
+            new_content = [
+                f'    <tr> <th scope="row">{index + 1}</th> <td colspan="2">{item.split("::")[0]}</td> <td>{item.split("::")[1]} €</td> </tr>\n'
                 for index, item in enumerate(items) if item.strip()
             ]
+            content[start_index:start_index] = new_content
             file.seek(0)
             file.writelines(content)
             file.truncate()
-            log(f"Section {section} in {os.path.basename(html_path)} has been updated.")
+            log(f"Section {section} in {os.path.basename(html_path)} has been initialized and updated.")
             return True
     return False
 
