@@ -28,7 +28,7 @@ if ($uploadOk == 0) {
     if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
         echo "El archivo ". htmlspecialchars(basename($_FILES["fileToUpload"]["name"])). " ha sido subido.";
         sleep(3); // Espera 3 segundos antes de proceder
-        shell_exec('python3 /var/www/html/update.py /var/www/html/uploads/file_changes.log 2>&1'); // Ejecuta el script Python
+        shell_exec('python3 /var/www/html/update.py >> /var/www/html/uploads/file_changes.log 2>&1'); // Ejecuta el script Python
 
         // Redirecciona al usuario
         header('Location: https://lapuertadelsol.lierganes.net/index.html');
