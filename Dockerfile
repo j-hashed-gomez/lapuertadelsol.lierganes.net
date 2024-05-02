@@ -5,11 +5,11 @@ WORKDIR /var/www/html/
 
 COPY ./web/static/ /var/www/html/
 RUN chmod +x /var/www/html/check_update_hashes.sh
-RUN chown -R www-data:www-data /var/www/html/
 RUN touch /var/www/html/uploads/file_changes.log
 RUN chmod -R 755 /var/www/html/uploads
 RUN chmod +x /var/www/html/update.py
 RUN touch /var/log/cron.log
+RUN chown -R www-data:www-data /var/www/html/
 
 # Crea el archivo .htpasswd y añade las líneas con los usuarios y contraseñas
 RUN echo 'jose:$2y$05$Z/PtGDfz9yJPvblW7xMcNOT8utvLmPl2Rw1F5Ej6mqfc7GUrejz8O' > /var/www/html/.htpasswd \

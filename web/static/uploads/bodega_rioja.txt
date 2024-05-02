@@ -1,0 +1,3 @@
+Bodega Rioja1::20
+Bodega Rioja2::25
+Bodega Rioja3::20,50

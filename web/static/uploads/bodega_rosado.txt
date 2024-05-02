@@ -1,0 +1,3 @@
+Bodega Rosado1::20
+Bodega Rosado2::25
+Bodega Rosado3::20,50

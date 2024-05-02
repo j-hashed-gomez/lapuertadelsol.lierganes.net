@@ -79,7 +79,7 @@ def save_hashes(file_path, hashes):
         json.dump(hashes, f)
 
 def main():
-    html_files = ["/var/www/html/carta.html", "/var/www/html/raciones.html"]
+    html_files = ["/var/www/html/carta.html", "/var/www/html/raciones.html", "/var/www/html/bodega.html"]
     upload_path = "/var/www/html/uploads/"
     hash_file = "/var/www/html/hashes.json"
 
