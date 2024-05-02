@@ -29,7 +29,7 @@ ENV PATH="/venv/bin:$PATH"
 
 #RUN pip install --upgrade pip && pip install -r requirements.txt
 
-RUN echo "* * * * * python3 /var/www/html/update.py >> /var/log/cron.log 2>&1" > /etc/cron.d/update-cron
+#RUN echo "* * * * * python3 /var/www/html/update.py >> /var/log/cron.log 2>&1" > /etc/cron.d/update-cron
 RUN chmod 0644 /etc/cron.d/update-cron
 RUN crontab /etc/cron.d/update-cron
 
