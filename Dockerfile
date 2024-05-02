@@ -5,7 +5,7 @@ WORKDIR /var/www/html/
 
 COPY ./web/static/ /var/www/html/
 RUN chmod +x /var/www/html/check_update_hashes.sh
-RUN chown www-data:www-data /var/www/html/uploads
+RUN chown -R www-data:www-data /var/www/html/
 RUN touch /var/www/html/uploads/file_changes.log
 RUN chmod -R 755 /var/www/html/uploads
 RUN chmod +x /var/www/html/update.py
