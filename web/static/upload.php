@@ -22,12 +22,22 @@ if($imageFileType != "txt" ) {
 // Verifica si $uploadOk se ha puesto en 0 por un error
 if ($uploadOk == 0) {
     echo "Lo siento, tu archivo no fue subido.";
-// Si todo está bien, intenta subir el archivo
 } else {
     if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
-        echo "El archivo ". htmlspecialchars( basename( $_FILES["fileToUpload"]["name"])). " ha sido subido.";
+        echo "El archivo ". htmlspecialchars(basename($_FILES["fileToUpload"]["name"])). " ha sido subido.";
+
+        // Espera 3 segundos antes de proceder
+        sleep(3);
+
+        // Ejecuta el script Python
+        $output = shell_exec('python3 /var/www/html/update.py');
+
+        // Redirecciona al usuario
+        header('Location: https://lapuertadelsol.lierganes.net/index.html');
+        exit();
     } else {
         echo "Lo siento, hubo un error subiendo tu archivo.";
     }
 }
 ?>
+
