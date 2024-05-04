@@ -1,5 +1,5 @@
 # Usa una imagen base de PHP con Apache
-FROM php:8.0-apache
+FROM php:8.1-apache
 
 WORKDIR /var/www/html/
 
