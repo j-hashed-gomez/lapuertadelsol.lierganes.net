@@ -31,32 +31,6 @@ if ($uploadOk == 0) {
 
         // Ejecuta el script Python
         shell_exec('python3 /var/www/html/update.py >> /var/www/html/uploads/file_changes.log 2>&1');
-
-        // Comprime los archivos .txt en un archivo zip
-        $zip_file = $upload_dir . "lapuertadelsol.zip";
-        $zip = new ZipArchive();
-        if ($zip->open($zip_file, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
-            $txt_files = glob($upload_dir . "*.txt");
-            foreach ($txt_files as $file) {
-                $zip->addFile($file, basename($file));
-            }
-            $zip->close();
-        }
-
-        // Descarga el archivo zip
-        if (file_exists($zip_file)) {
-            header('Content-Description: File Transfer');
-            header('Content-Type: application/zip');
-            header('Content-Disposition: attachment; filename="'.basename($zip_file).'"');
-            header('Content-Length: ' . filesize($zip_file));
-            readfile($zip_file);
-            
-            // Borra el archivo zip después de ser descargado
-            unlink($zip_file);
-            exit();
-        } else {
-            echo "Lo siento, no se pudo crear el archivo zip.";
-        }
     } else {
         echo "Lo siento, hubo un error subiendo tu archivo.";
     }
@@ -64,3 +38,25 @@ if ($uploadOk == 0) {
 
 ob_end_flush(); // Asegura que cualquier salida se envía al final
 ?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Subir y Descargar</title>
+</head>
+<body>
+    <h2>Subir Archivo</h2>
+    <form action="" method="post" enctype="multipart/form-data">
+        Seleccione un archivo .txt para subir:
+        <input type="file" name="fileToUpload" id="fileToUpload">
+        <input type="submit" value="Subir Archivo" name="submit">
+    </form>
+    
+    <?php if (file_exists($upload_dir . "lapuertadelsol.zip")): ?>
+        <h2>Descargar Archivo Comprimido</h2>
+        <form action="descargar.php" method="post">
+            <input type="submit" value="Descargar" name="download">
+        </form>
+    <?php endif; ?>
+</body>
+</html>
