@@ -2,15 +2,25 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Subir Archivo</title>
+    <title>Subir y Descargar</title>
 </head>
 <body>
-    <h1>Subida de archivo</h1>
-    <!-- El formulario para subir archivos -->
+    <h1>Subida y Descarga de Archivos</h1>
+    
+    <!-- Formulario para subir archivos -->
+    <h2>Subir Archivo</h2>
     <form action="upload.php" method="post" enctype="multipart/form-data">
         Seleccione archivo para subir:
         <input type="file" name="fileToUpload" id="fileToUpload">
         <input type="submit" value="Subir Archivo" name="submit">
     </form>
+    
+    <!-- Botón de descarga -->
+    <?php if (file_exists("/var/www/html/uploads/lapuertadelsol.zip")): ?>
+        <h2>Descargar Archivo Comprimido</h2>
+        <form action="descargar.php" method="post">
+            <input type="submit" value="Descargar" name="download">
+        </form>
+    <?php endif; ?>
 </body>
 </html>
