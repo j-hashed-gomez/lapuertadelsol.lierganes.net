@@ -16,11 +16,9 @@
     </form>
     
     <!-- Botón de descarga -->
-    <?php if (file_exists("/var/www/html/uploads/lapuertadelsol.zip")): ?>
-        <h2>Descargar Archivo Comprimido</h2>
-        <form action="descargar.php" method="post">
-            <input type="submit" value="Descargar" name="download">
-        </form>
-    <?php endif; ?>
+    <h2>Descargar Archivo Comprimido</h2>
+    <form action="descargar.php" method="post">
+        <input type="submit" value="Descargar" name="download">
+    </form>
 </body>
 </html>
