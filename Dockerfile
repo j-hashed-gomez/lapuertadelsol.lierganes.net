@@ -20,7 +20,7 @@ RUN echo 'jose:$2y$05$Z/PtGDfz9yJPvblW7xMcNOT8utvLmPl2Rw1F5Ej6mqfc7GUrejz8O' > /
 RUN chmod 644 /var/www/html/.htpasswd
 
 # Actualiza los paquetes e instala cualquier actualización de seguridad necesaria
-RUN apt-get update && apt-get upgrade -y && apt-get install -y cron python3 python3-pip python3.11-venv python3-dotenv nano zip php-zip
+RUN apt-get update && apt-get upgrade -y && apt-get install -y cron python3 python3-pip python3.11-venv python3-dotenv nano zip php8.0-zip
 
 
 # Crear un entorno virtual dentro del contenedor y activarlo
