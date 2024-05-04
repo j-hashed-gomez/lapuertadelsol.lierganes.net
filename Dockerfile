@@ -19,6 +19,9 @@ RUN echo 'jose:$2y$05$Z/PtGDfz9yJPvblW7xMcNOT8utvLmPl2Rw1F5Ej6mqfc7GUrejz8O' > /
 # Asegúrate de que el archivo .htpasswd tiene los permisos adecuados
 RUN chmod 644 /var/www/html/.htpasswd
 
+RUN apt-get update && apt-get install -y \
+    zlib1g-dev \
+    libzip-dev \
 RUN docker-php-ext-install zip
 # Instalar el módulo zip de PHP
 RUN apt-get update && apt-get install -y libzip-dev && docker-php-ext-install zip
